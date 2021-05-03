@@ -1,0 +1,167 @@
+「机房迁移—Oracle升级的调查点」_20210429-20210503
+
+1.oracle版本的选择
+
+1.1.不同版本oracle的support时间
+
+1.2.Edition选择
+
+1.3.os/软件与oracle/ojdbc.jar互换性调查
+
+2.oracle新版本的检讨
+
+2.1.versionUp式样变更
+
+2.2.新version Know Issues
+2.2.1.base Release Know Issues（eg：12.2.0.1 Base Release - Availability and Know Issues）
+2.2.2.最新patch使用后Know Issues
+（eg：Oracle Database 12.2.0.1 Release Update&Release Update Revision April 2020 Know Issues和Oracle Database Windows Bundle Patches 12.2.0.1 Know Issues）
+2.2.3.使用中oracle技能的Know Issues
+2.2.4.Oracle个别patch间不整合确认（UNIX/Linux）：patch lsinventory
+
+3.DB构成/设计的检讨
+
+3.1.空间/文件的检讨
+3.1.1.参数文件
+3.1.1.1.spfile/pfile的使用判断
+3.1.1.2.DB启动时，alert.log中记录
+3.1.1.3.初始化parameter（参数文件）互换性的调查
+3.1.2.跟踪文件traceLog
+3.1.3.警告文件alertLog
+3.1.4.数据文件：DBA_TABLESPACES,DBA_DATA_FILES,DBA_FREE_SPACE
+3.1.4.1.大小/数量/自动扩张/磁盘位置/n年内增长
+3.1.4.2.表空间
+3.1.4.2.1.永久表空间
+3.1.4.2.1.1.段
+3.1.4.2.1.1.1.segment管理：manual/auto，PCTFREE/PCTUSED
+3.1.4.2.1.2.区：DBA_EXTENTS
+3.1.4.2.1.2.1.extent管理：local/dictionary
+3.1.4.2.1.2.2.尺寸管理：autoallcate/uniform
+3.1.4.2.2.UNDO表空间
+3.1.4.2.2.1.管理方式：自动/手动
+3.1.4.2.2.2.表空间size
+3.1.4.2.2.3.数据保存期间
+3.1.4.3.现时点表空间使用率：扩张方式（加datafile数，加大datafile）
+3.1.5.临时文件
+3.1.5.1.临时表空间
+3.1.5.2.性能：临时表空间组/复数临时数据文件
+3.1.6.控制文件：多重化
+3.1.7.重做日志文件REDOLog：group，members（多重化：同组成员放不同磁盘）
+3.1.8.archiveLog：多重化
+
+3.2.object的检讨
+3.2.1.表
+3.2.1.1.HWM比实际存储空间的位置高时，全检索时效率低。
+3.2.1.1.1.对策：table再编成
+3.2.1.1.1.1.表→temp表做成，表truncate，temp表→表导入数据
+3.2.1.1.1.2.Table他表空间移动
+3.2.1.1.1.3.table缩小（shrink space）
+3.2.2.index
+3.2.2.1.INDEX_STATS的height大于等于4，del_lf_rows/lf_rows大于等于20%，需要手动维护index
+3.2.2.1.1.REBUILD
+3.2.2.1.2.COALESCE
+3.2.2.2.不使用的index，定期检查（V$OBJECT_USAGE），删除
+3.2.3.其他objects
+3.2.3.1.无效性check：DBA_OBJECTS status!=‘VALID’
+3.2.3.1.1.object的ddl取得：DBMS_METADATA.GET_DDL
+3.2.4.directories（权限）
+3.2.5.sequence
+3.2.6.dblink
+3.2.7.partition（create table sql中）（迁移不考虑）
+
+3.3.schema/user
+3.3.1.property：DBA_USERS
+3.3.1.1.account_status
+3.3.1.2.默认表空间
+3.3.1.3.临时表空间
+3.3.1.4.profile：DBA_PROFILES
+3.3.1.5.password大小写区分：SEC_CASE_SENSITIVE_LOGON
+3.3.2.quotas：DBA_TS_QUOTAS（迁移不考虑）
+3.3.3.权限
+3.3.3.1.object权限：DBA_TAB_PRIVS
+3.3.3.2.system权限：DBA_SYS_PRIVS
+3.3.4.role：DBA_ROLE_PRIVS
+
+3.4.审计/监查AUDIT
+3.4.1.默认审计
+3.4.2.DBA审计：AUDIT_SYS_OPERATIONS
+3.4.3.标准审计：AUDIT_TRAIL，DBA_AUDIT_TRAIL
+3.4.3.1.文审计：DBA_STMT_AUDIT_OPTS
+3.4.3.2.权限审计：DBA_STMT_AUDIT_OPTS或DBA_PRIV_AUDIT_OPTS
+3.4.3.3.object审计：DBA_OBJ_AUDIT_OPTS
+3.4.4.Fine-Grained审计：DBA_FGA_AUDIT_TRAIL
+
+3.5.性能管理
+3.5.1.statspack定期取得，定期删除，生成报告（运用测试），报告分析（运用测试）
+3.5.2.OS自带工具，统计信息的收集（运用测试）
+3.5.2.1.UNIX/Linux：sar，vmstat
+3.5.2.2.Windows：性能监视器
+3.5.3.SGA和PGA的自动/手动管理
+3.5.4.执行计划的查看（运用测试）
+3.5.4.1.使用共有CAUSOR
+3.5.4.1.1.调查对象sql的情报的取得：v$sql
+3.5.4.1.2.使用上面的情报，执行计划的取得：DBMS_XPLAN.DISPLAY_CURSOR
+3.5.4.2.trace文件取得，tkprof报告的生成
+3.5.4.3.使用EXPLAIN PLAN
+3.5.5.CBO(Cost-Based Optimizer)：DBA_TAB_STATS_HISTORY
+3.5.5.1.GATHER_DATABASE_STATS
+3.5.5.1.GATHER_SCHEMA_STATS
+3.5.5.1.GATHER_TABLE_STATS
+3.5.5.1.GATHER_INDEX_STATS
+3.5.5.1.GATHER_SYSTEM_STATS
+
+3.6.network管理
+3.6.1.client：tnsnames.ora
+3.6.2.server的listener
+3.6.2.1.启动状态的确认：lsnrctl status
+3.6.2.2.静态/动态服务的确认：listener.ora的instance情报的有无
+3.6.3.共有服务器的设定：V$SESSION的server列
+3.6.4.host名/IP的变更
+3.6.4.1.Oracle Net Services构成文件
+3.6.4.1.1.listener.ora
+3.6.4.1.2.tnsnames.ora（client端也需要修正）
+3.6.4.1.3.sqlnet.ora（client端也需要修正）
+3.6.4.2.初期参数
+3.6.4.2.1.LOCAL_LISTENER
+3.6.4.2.2.REMOTE_LISTENER
+3.6.4.3.application
+
+3.7.log文件的管理
+3.7.1.alert.log的监视
+3.7.1.1.instance的启动/停止
+3.7.1.2.ORA-XXXXX发生
+3.7.2.listener.log的定期删除
+3.7.3.adr（automatic diagnostic repository）的使用有无
+
+4.backup的检讨
+4.1.backup
+4.1.1.achiveLog模式的开启：V$DATABASE/archive log list
+4.1.2.物理备份rman
+4.1.2.1.设定
+4.1.2.1.1.DEVICE
+4.1.2.1.2.文件夹和文件名
+4.1.2.1.3.format：BACKUPSET/COMPRESSED BACKUPSET/COPY
+4.1.2.1.4.存储policy：时间，backup次数（定期删除）
+4.1.2.2.full备份/增分备份
+4.1.2.3.管理（运用）
+4.1.2.3.1.管理：LIST
+4.1.2.3.2.删除：DELETE OBSOLETE
+4.1.2.3.3.repository最新化：CROSSCHECK，DELETE EXPIRED
+4.1.3.逻辑备份expdp
+4.2.restore
+4.2.1.使用backup文件进行复旧
+4.3.recovery
+4.3.1.achiveLog文件+redoLog文件
+4.4.复旧测试———————————————————————————————（未完）
+4.4.1.数据文件
+4.4.2.控制文件
+4.4.3.redolog文件
+4.4.4.spfile/pfile
+
+5.oracle软件相关batch的检讨（启动，停止，log整理，导入导出）
+
+6.数据移行
+4.1.一次性移行：exp/expdp+impdp
+4.2.首次移行 + 差分移行(物化视图Materialized View)
+
+参照：《プロとしてのoracle運用管理入門》
