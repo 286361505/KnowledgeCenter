@@ -164,4 +164,29 @@
 4.1.一次性移行：exp/expdp+impdp
 4.2.首次移行 + 差分移行(物化视图Materialized View)
 
+
+容量预估（迁移不考虑）
+1.table容量：BLOB以外
+1.1.block size=8192
+1.2.INITRANS=1
+1.3.PCTFREE=20
+1.4.block head size=90+（【2】-1）=90
+1.5.预备领域size=（【1】-【4】）*【3】/100=1621
+1.6.存储data部分的size=【1】-【4】-【5】
+1.7.表的单件数据最大size
+1.8.1block所能容纳数据件数=【6】/【7】
+1.9.年增长件数
+1.10.年必须block数=【9】/【8】
+1.11.table容量=【10】*【1】
+2.index容量：table容量*30%
+3.LOBtable容量：
+3.1.block size=8192
+3.2.chunk size=32768
+3.3.LOB文件的最大size
+3.4.LOB字段最大size=（【3】/【2】（取整））*【2】
+3.5.年增长件数
+3.6.LOBtable容量=【5】*【4】
+4.LOBindex容量：LOBtable容量*5%
+5.secureFile（create sql）
+
 参照：《プロとしてのoracle運用管理入門》
