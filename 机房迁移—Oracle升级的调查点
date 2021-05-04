@@ -64,6 +64,7 @@
 3.2.3.其他objects
 3.2.3.1.无效性check：DBA_OBJECTS status!=‘VALID’
 3.2.3.1.1.object的ddl取得：DBMS_METADATA.GET_DDL
+3.2.3.2.trigger，all_jobs/all_schedule_jobs
 3.2.4.directories（权限）
 3.2.5.sequence
 3.2.6.dblink
@@ -92,7 +93,7 @@
 3.4.4.Fine-Grained审计：DBA_FGA_AUDIT_TRAIL
 
 3.5.性能管理
-3.5.1.statspack定期取得，定期删除，生成报告（运用测试），报告分析（运用测试）
+3.5.1.statspack（perfstat用户）定期取得，定期删除，生成报告（运用测试），报告分析（运用测试）
 3.5.2.OS自带工具，统计信息的收集（运用测试）
 3.5.2.1.UNIX/Linux：sar，vmstat
 3.5.2.2.Windows：性能监视器
