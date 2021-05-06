@@ -163,6 +163,7 @@
 
 6.数据移行
 4.1.一次性移行：exp/expdp+impdp
+4.1.1.expdp容量估算：estimate_only=y
 4.2.首次移行 + 差分移行(物化视图Materialized View)
 
 
