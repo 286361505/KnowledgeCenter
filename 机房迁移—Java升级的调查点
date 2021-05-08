@@ -1,0 +1,20 @@
+「机房迁移—Java升级的调查点」_20210508
+
+1.Java版本的选择
+
+1.1.旧环境中Java使用状况的确认
+1.1.1.Oracle JDK
+1.1.2.IBM JDK
+1.1.3.OPEN  JDK
+
+1.2.OS与Java互换性调查
+
+1.3.各软件与Java互换性调查
+
+1.4.GC（garbage collection）设定
+
+2.version up兼容性的调查
+
+2.1.代码
+
+2.2.jar
